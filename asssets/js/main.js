@@ -1,256 +1,267 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const canvas = document.getElementById('frierenCanvas');
-    const ctx = canvas.getContext('2d');
+ const canvas = document.getElementById('chaosCanvas');
+        const ctx = canvas.getContext('2d');
 
-    // Función para dibujar una estrella (para los hechizos o estrellas en el cielo)
-    function drawStar(cx, cy, spikes, outerRadius, innerRadius, color) {
-        let rot = Math.PI / 2 * 3;
-        let x = cx;
-        let y = cy;
-        let step = Math.PI / spikes;
+        function drawApp() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - outerRadius);
-        for (let i = 0; i < spikes; i++) {
-            x = cx + Math.cos(rot) * outerRadius;
-            y = cy + Math.sin(rot) * outerRadius;
-            ctx.lineTo(x, y);
-            rot += step;
+            // 1. ESCENARIO
+            drawStage();
 
-            x = cx + Math.cos(rot) * innerRadius;
-            y = cy + Math.sin(rot) * innerRadius;
-            ctx.lineTo(x, y);
-            rot += step;
+            // 2. TELONES
+            drawCurtains();
+
+            // 3. LUCES DE ESCENARIO
+            drawSpotlights();
+
+            // 4. ELEMENTOS DE AMBIENTE (Estrellas y Confeti)
+            for(let i=0; i<40; i++) {
+                drawStar(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*2+1, 5, 2);
+            }
+            drawConfetti(100);
+
+            // 5. CAOS DE AZAR
+            
+            // Símbolos de la baraja flotantes
+            const suits = ['heart', 'spade', 'diamond', 'club'];
+            for(let i=0; i<25; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = 20 + Math.random() * 40;
+                const suit = suits[Math.floor(Math.random() * suits.length)];
+                const color = (suit === 'heart' || suit === 'diamond') ? 'rgba(231, 76, 60, 0.2)' : 'rgba(255, 255, 255, 0.1)';
+                drawSuitSymbol(x, y, size, suit, color);
+            }
+
+            // Lluvia de cartas con J, Q, K y A
+            const cardValues = ['A', 'J', 'Q', 'K'];
+            for(let i=0; i<20; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * (canvas.height - 100);
+                if (x > 300 && x < 700 && y > 200 && y < 450) continue; 
+                
+                const value = cardValues[Math.floor(Math.random() * cardValues.length)];
+                drawDetailedCard(x, y, Math.random()*Math.PI, i%2===0?"#e74c3c":"#2c3e50", value);
+            }
+
+            // Pilas de fichas
+            const chipPositions = [
+                [100, 600], [180, 640], [280, 610], [380, 650],
+                [620, 650], [720, 620], [820, 640], [900, 600],
+                [500, 660], [450, 630], [550, 630]
+            ];
+            chipPositions.forEach(pos => {
+                drawPremiumChips(pos[0], pos[1], Math.floor(Math.random()*6 + 3));
+            });
+
+            // Dados
+            for(let i=0; i<10; i++) {
+                const x = 50 + (Math.random() * 900);
+                draw3DDice(x, 560 + (Math.random()*80), 35 + Math.random()*15);
+            }
+
+            // 6. MÁSCARAS CENTRALES
+            drawDetailedMask(350, 300, false, "#f0f0f0");
+            drawDetailedMask(650, 300, true, "#ffdf00");
         }
-        ctx.closePath();
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-        ctx.stroke();
-    }
 
-    // Fondo del cielo y montañas
-    ctx.fillStyle = '#87CEEB'; // Azul claro para el cielo
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function drawStage() {
+            ctx.fillStyle = "#080812";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const grad = ctx.createLinearGradient(0, 550, 0, 700);
+            grad.addColorStop(0, "#2a1b12");
+            grad.addColorStop(1, "#050302");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 550, canvas.width, 150);
+        }
 
-    // Montañas
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height * 0.7);
-    ctx.lineTo(canvas.width * 0.2, canvas.height * 0.4);
-    ctx.lineTo(canvas.width * 0.4, canvas.height * 0.75);
-    ctx.lineTo(canvas.width * 0.6, canvas.height * 0.3);
-    ctx.lineTo(canvas.width * 0.8, canvas.height * 0.6);
-    ctx.lineTo(canvas.width, canvas.height * 0.5);
-    ctx.lineTo(canvas.width, canvas.height);
-    ctx.lineTo(0, canvas.height);
-    ctx.closePath();
-    ctx.fillStyle = '#654321'; // Marrón oscuro para las montañas
-    ctx.fill();
-    ctx.strokeStyle = '#4A2F0F';
-    ctx.stroke();
+        function drawCurtains() {
+            ctx.fillStyle = "#660000"; 
+            for(let i=0; i<5; i++) {
+                const offset = i*50;
+                ctx.beginPath();
+                ctx.moveTo(offset, 0);
+                ctx.quadraticCurveTo(150 + offset, 350, 80 + offset, 700);
+                ctx.lineTo(0, 700); ctx.lineTo(0, 0); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(canvas.width - offset, 0);
+                ctx.quadraticCurveTo(canvas.width - 150 - offset, 350, canvas.width - 80 - offset, 700);
+                ctx.lineTo(canvas.width, 700); ctx.lineTo(canvas.width, 0); ctx.fill();
+            }
+        }
 
-    // Nieve en las montañas
-    ctx.beginPath();
-    ctx.moveTo(canvas.width * 0.2, canvas.height * 0.4);
-    ctx.lineTo(canvas.width * 0.22, canvas.height * 0.45);
-    ctx.lineTo(canvas.width * 0.18, canvas.height * 0.47);
-    ctx.closePath();
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fill();
+        function drawSuitSymbol(x, y, size, type, color) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(Math.random() * Math.PI);
+            ctx.fillStyle = color;
+            ctx.font = `${size}px serif`;
+            let symbol = '';
+            if (type === 'heart') symbol = '♥';
+            if (type === 'spade') symbol = '♠';
+            if (type === 'diamond') symbol = '♦';
+            if (type === 'club') symbol = '♣';
+            ctx.fillText(symbol, -size/2, size/2);
+            ctx.restore();
+        }
 
-    ctx.beginPath();
-    ctx.moveTo(canvas.width * 0.6, canvas.height * 0.3);
-    ctx.lineTo(canvas.width * 0.62, canvas.height * 0.35);
-    ctx.lineTo(canvas.width * 0.58, canvas.height * 0.37);
-    ctx.closePath();
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fill();
+        function drawConfetti(count) {
+            const colors = ['#f1c40f', '#e74c3c', '#3498db', '#9b59b6', '#2ecc71', '#ffffff'];
+            for(let i=0; i<count; i++) {
+                ctx.save();
+                ctx.translate(Math.random() * canvas.width, Math.random() * canvas.height);
+                ctx.rotate(Math.random() * Math.PI);
+                ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+                ctx.globalAlpha = 0.5;
+                ctx.fillRect(0, 0, 4 + Math.random() * 5, 4 + Math.random() * 5);
+                ctx.restore();
+            }
+        }
 
-    // Hierba en primer plano
-    ctx.fillStyle = '#6B8E23'; // Verde oliva para la hierba
-    ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+        function drawDetailedMask(x, y, isHappy, color) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.shadowBlur = 30; ctx.shadowColor = "black";
+            const maskGrad = ctx.createRadialGradient(-20, -30, 10, 0, 0, 100);
+            maskGrad.addColorStop(0, "white");
+            maskGrad.addColorStop(1, color);
+            ctx.fillStyle = maskGrad;
+            ctx.beginPath(); 
+            ctx.ellipse(0, 0, 90, 120, 0, 0, Math.PI*2); 
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = "rgba(0,0,0,0.8)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
 
-    // Camino
-    ctx.beginPath();
-    ctx.moveTo(canvas.width * 0.1, canvas.height);
-    ctx.lineTo(canvas.width * 0.3, canvas.height * 0.7);
-    ctx.lineTo(canvas.width * 0.7, canvas.height * 0.7);
-    ctx.lineTo(canvas.width * 0.9, canvas.height);
-    ctx.closePath();
-    ctx.fillStyle = '#D2B48C'; // Marrón claro para el camino
-    ctx.fill();
-    ctx.strokeStyle = '#A0522D';
-    ctx.stroke();
+            // Rombos de bufón
+            ctx.fillStyle = isHappy ? "rgba(0,150,255,0.2)" : "rgba(255,0,0,0.2)";
+            ctx.beginPath();
+            ctx.moveTo(-40, -60); ctx.lineTo(-25, -80); ctx.lineTo(-10, -60); ctx.lineTo(-25, -40); ctx.closePath(); ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(40, -60); ctx.lineTo(25, -80); ctx.lineTo(10, -60); ctx.lineTo(25, -40); ctx.closePath(); ctx.fill();
 
-    // Sol o Luna (dependiendo del ambiente, aquí será un sol suave)
-    ctx.beginPath();
-    ctx.arc(canvas.width * 0.8, canvas.height * 0.15, 40, 0, Math.PI * 2, true);
-    ctx.closePath();
-    ctx.fillStyle = '#FFD700'; // Dorado
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-    ctx.stroke();
+            ctx.fillStyle = "#111";
+            if(isHappy) {
+                ctx.beginPath(); ctx.moveTo(-50, -20); ctx.quadraticCurveTo(-30, -45, -10, -20); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(50, -20); ctx.quadraticCurveTo(30, -45, 10, -20); ctx.stroke();
+                ctx.fillStyle = "rgba(255,100,100,0.3)";
+                ctx.beginPath(); ctx.arc(-45, 10, 15, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(45, 10, 15, 0, Math.PI*2); ctx.fill();
+                ctx.lineWidth = 4; ctx.strokeStyle = "#111";
+                ctx.beginPath(); ctx.arc(0, 30, 50, 0.3, Math.PI-0.3); ctx.stroke();
+            } else {
+                ctx.beginPath(); ctx.ellipse(-30, -15, 18, 10, 0.2, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(30, -15, 18, 10, -0.2, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#3498db";
+                ctx.beginPath(); ctx.arc(-30, 5, 5, 0, Math.PI); ctx.lineTo(-30, 20); ctx.fill();
+                ctx.lineWidth = 4; ctx.strokeStyle = "#111";
+                ctx.beginPath(); ctx.arc(0, 85, 40, 0, Math.PI, true); ctx.stroke();
+            }
+            ctx.restore();
+        }
 
-    // Nubes (rectángulos y arcos combinados)
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.beginPath();
-    ctx.arc(100, 100, 30, 0, Math.PI * 2);
-    ctx.arc(130, 100, 25, 0, Math.PI * 2);
-    ctx.arc(160, 100, 30, 0, Math.PI * 2);
-    ctx.arc(145, 80, 20, 0, Math.PI * 2);
-    ctx.fill();
+        function drawSpotlights() {
+            const lights = [200, 500, 800];
+            lights.forEach(x => {
+                const grad = ctx.createRadialGradient(x, 0, 50, x, 400, 600);
+                grad.addColorStop(0, "rgba(255,255,220,0.2)");
+                grad.addColorStop(1, "rgba(255,255,220,0)");
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(x-30, 0); ctx.lineTo(x+30, 0);
+                ctx.lineTo(x+300, 700); ctx.lineTo(x-300, 700);
+                ctx.fill();
+            });
+        }
 
-    ctx.beginPath();
-    ctx.arc(500, 120, 25, 0, Math.PI * 2);
-    ctx.arc(530, 120, 30, 0, Math.PI * 2);
-    ctx.arc(560, 120, 25, 0, Math.PI * 2);
-    ctx.arc(545, 100, 20, 0, Math.PI * 2);
-    ctx.fill();
+        function drawDetailedCard(x, y, rot, color, value = "A") {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            
+            // Sombra proyectada
+            ctx.shadowBlur = 8; ctx.shadowColor = "rgba(0,0,0,0.4)";
+            
+            // Cuerpo de la carta
+            ctx.fillStyle = "#fff";
+            ctx.beginPath(); ctx.roundRect(-35, -50, 70, 100, 6); ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Borde interno decorativo
+            ctx.strokeStyle = color; ctx.lineWidth = 1;
+            ctx.strokeRect(-31, -46, 62, 92);
+            
+            // Valor de la carta (Esquina superior e inferior)
+            ctx.fillStyle = color;
+            ctx.font = "bold 16px serif";
+            ctx.fillText(value, -26, -26);
+            
+            ctx.save();
+            ctx.rotate(Math.PI);
+            ctx.fillText(value, -26, -26);
+            ctx.restore();
+            
+            // Arte central
+            if (value === "A") {
+                ctx.font = "24px serif";
+                ctx.fillText("♠", -10, 8);
+            } else {
+                // Dibujo simplificado de corona para J, Q, K
+                ctx.beginPath();
+                ctx.moveTo(-12, 10);
+                ctx.lineTo(-12, -8);
+                ctx.lineTo(-6, 2);
+                ctx.lineTo(0, -10);
+                ctx.lineTo(6, 2);
+                ctx.lineTo(12, -8);
+                ctx.lineTo(12, 10);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            ctx.restore();
+        }
 
-    // Árboles (en la distancia)
-    // Troncos
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(50, canvas.height * 0.6, 10, 50);
-    ctx.fillRect(150, canvas.height * 0.65, 10, 40);
-    ctx.fillRect(700, canvas.height * 0.6, 10, 50);
-    ctx.fillRect(600, canvas.height * 0.65, 10, 40);
+        function draw3DDice(x, y, size) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(Math.random());
+            ctx.fillStyle = "#fdfdfd";
+            ctx.beginPath(); ctx.roundRect(0, 0, size, size, 6); ctx.fill();
+            ctx.fillStyle = "#e74c3c";
+            ctx.beginPath(); ctx.arc(size/2, size/2, size*0.12, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+        }
 
-    // Copas (triángulos)
-    ctx.fillStyle = '#228B22';
-    ctx.beginPath();
-    ctx.moveTo(55, canvas.height * 0.5);
-    ctx.lineTo(30, canvas.height * 0.65);
-    ctx.lineTo(80, canvas.height * 0.65);
-    ctx.closePath();
-    ctx.fill();
+        function drawPremiumChips(x, y, count) {
+            const colors = ["#27ae60", "#e67e22", "#2980b9"];
+            const color = colors[Math.floor(Math.random()*colors.length)];
+            for(let i=0; i<count; i++) {
+                const cy = y - (i*8);
+                ctx.fillStyle = "#333";
+                ctx.beginPath(); ctx.ellipse(x, cy, 35, 14, 0, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = color;
+                ctx.beginPath(); ctx.ellipse(x, cy-2, 32, 12, 0, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
+                ctx.beginPath(); ctx.ellipse(x, cy-2, 25, 9, 0, 0, Math.PI*2); ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
 
-    ctx.beginPath();
-    ctx.moveTo(155, canvas.height * 0.55);
-    ctx.lineTo(130, canvas.height * 0.7);
-    ctx.lineTo(180, canvas.height * 0.7);
-    ctx.closePath();
-    ctx.fill();
+        function drawStar(x, y, r, p, m) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.beginPath();
+            ctx.moveTo(0, 0-r);
+            for (let i = 0; i < p; i++) {
+                ctx.rotate(Math.PI / p);
+                ctx.lineTo(0, 0 - (r * m));
+                ctx.rotate(Math.PI / p);
+                ctx.lineTo(0, 0 - r);
+            }
+            ctx.fillStyle = "rgba(255,255,200,0.5)";
+            ctx.fill();
+            ctx.restore();
+        }
 
-    ctx.beginPath();
-    ctx.moveTo(705, canvas.height * 0.5);
-    ctx.lineTo(680, canvas.height * 0.65);
-    ctx.lineTo(730, canvas.height * 0.65);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(605, canvas.height * 0.55);
-    ctx.lineTo(580, canvas.height * 0.7);
-    ctx.lineTo(630, canvas.height * 0.7);
-    ctx.closePath();
-    ctx.fill();
-
-    // Rocas en el camino (círculos y elipses)
-    ctx.fillStyle = '#808080';
-    ctx.beginPath();
-    ctx.arc(canvas.width * 0.35, canvas.height * 0.8, 10, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(canvas.width * 0.6, canvas.height * 0.85, 15, 8, Math.PI / 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(canvas.width * 0.25, canvas.height * 0.9, 8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Pequeñas flores en la hierba (círculos y líneas para pétalos)
-    ctx.fillStyle = '#FFC0CB'; // Rosa
-    ctx.beginPath();
-    ctx.arc(canvas.width * 0.1, canvas.height * 0.75, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(canvas.width * 0.9, canvas.height * 0.8, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(canvas.width * 0.45, canvas.height * 0.95, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#FF4500'; // Naranja
-    ctx.beginPath();
-    ctx.arc(canvas.width * 0.15, canvas.height * 0.85, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(canvas.width * 0.85, canvas.height * 0.75, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Silueta de Frieren (simplificada con rectángulos y círculos)
-    const frierenX = canvas.width * 0.5 - 20; // Centrar
-    const frierenY = canvas.height * 0.6;
-
-    // Túnica (rectángulo principal)
-    ctx.fillStyle = '#8B008B'; // Morado oscuro
-    ctx.fillRect(frierenX, frierenY, 40, 100);
-
-    // Brazos (rectángulos)
-    ctx.fillRect(frierenX - 15, frierenY + 20, 15, 50);
-    ctx.fillRect(frierenX + 40, frierenY + 20, 15, 50);
-
-    // Cabeza (círculo)
-    ctx.fillStyle = '#FFE4C4'; // Color piel
-    ctx.beginPath();
-    ctx.arc(frierenX + 20, frierenY - 10, 20, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#000000';
-    ctx.stroke();
-
-    // Pelo (arcos y líneas)
-    ctx.fillStyle = '#D2B48C'; // Cabello claro
-    ctx.beginPath();
-    ctx.arc(frierenX + 20, frierenY - 15, 25, Math.PI * 0.75, Math.PI * 0.25);
-    ctx.lineTo(frierenX + 45, frierenY - 5);
-    ctx.lineTo(frierenX + 20, frierenY - 35);
-    ctx.lineTo(frierenX - 5, frierenY - 5);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // Cara simplificada (ojos: círculos, boca: línea)
-    ctx.fillStyle = '#000000';
-    ctx.beginPath();
-    ctx.arc(frierenX + 10, frierenY - 15, 3, 0, Math.PI * 2);
-    ctx.arc(frierenX + 30, frierenY - 15, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(frierenX + 20, frierenY - 5, 5, 0, Math.PI, false); // Media luna para la boca
-    ctx.stroke();
-
-    // Cinturón (rectángulo)
-    ctx.fillStyle = '#A0522D';
-    ctx.fillRect(frierenX, frierenY + 50, 40, 10);
-
-    // Bastón (línea y círculo)
-    ctx.strokeStyle = '#696969';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.moveTo(frierenX + 50, frierenY + 70);
-    ctx.lineTo(frierenX + 70, frierenY - 50);
-    ctx.stroke();
-    ctx.lineWidth = 1; // Resetear grosor
-
-    ctx.fillStyle = '#FFD700'; // Dorado para la punta del bastón
-    ctx.beginPath();
-    ctx.arc(frierenX + 70, frierenY - 50, 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#000000';
-    ctx.stroke();
-
-    // Pequeñas estrellas o efectos de magia alrededor de Frieren
-    drawStar(frierenX - 30, frierenY + 30, 5, 10, 5, '#FFFF00');
-    drawStar(frierenX + 70, frierenY, 5, 8, 4, '#FF69B4');
-    drawStar(frierenX + 55, frierenY - 30, 4, 7, 3, '#ADD8E6');
-
-    // Múltiples rocas pequeñas para alcanzar más de 30 figuras
-    for (let i = 0; i < 15; i++) {
-        const rockX = Math.random() * canvas.width;
-        const rockY = canvas.height * 0.7 + Math.random() * (canvas.height * 0.3);
-        const rockSize = 5 + Math.random() * 10;
-        ctx.fillStyle = `rgb(${100 + Math.random() * 50}, ${100 + Math.random() * 50}, ${100 + Math.random() * 50})`;
-        ctx.beginPath();
-        ctx.arc(rockX, rockY, rockSize, 0, Math.PI * 2);
-        ctx.fill();
-    }
-});
+        window.onload = drawApp;
