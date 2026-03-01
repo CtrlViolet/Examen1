@@ -55,6 +55,15 @@ body {
     left: 100%;
 }
 
+.section-title {
+    /* texto con degradado parecido al navbar */
+    background: linear-gradient(90deg, #2e1a47, #6b0f1a);
+    -webkit-background-clip: text;
+    color: tomato ;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
 /* ================= INTRO ================= */
 
 .intro-screen {
@@ -146,6 +155,7 @@ canvas:hover {
     transform: translateY(30px);
     transition: all 1s ease;
 }
+
 
 .philosophy-section.visible {
     opacity: 1;
